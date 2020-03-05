@@ -4,28 +4,28 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.sql.DataSource;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import id.bts.multidb.configs.DataSOurceEntity;
 import id.bts.multidb.localdb.domains.DbaDataFilesDTO;
 import id.bts.multidb.localdb.domains.DbaSegmentsDTO;
 import id.bts.multidb.localdb.domains.TableSpaceDTO;
 import id.bts.multidb.localdb.mappers.DbaDataFilesMapper;
-import id.bts.multidb.localdb.mappers.DbaSegmentsMapper;
 
-//@Repository(value = "tableSpace_jdbcTemplate")
-public class TableSpaceRepository {
-
-	@Autowired
-	JdbcTemplate jdbcTemplate;
+@Repository(value = "tableSpace_jdbcTemplate")
+public class DynamicTabSpaceRepo {
 	
+	
+	private static final Logger log = LoggerFactory.getLogger(DynamicTabSpaceRepo.class);
+
 	@Autowired
-	@Qualifier("localDataSource")
-	List<DataSource> dataSource;
+	@Qualifier("ocdb12cDataSources")
+	List<DataSOurceEntity> dataSources;
 	
 	public List<TableSpaceDTO> getAllTableSpace() {
 		
@@ -65,7 +65,27 @@ public class TableSpaceRepository {
 				"  FROM dba_data_files\n" + 
 				"  GROUP BY tablespace_name";
 		
-		List<DbaDataFilesDTO> results = jdbcTemplate.query(query, new DbaDataFilesMapper());
+		log.warn(query);
+		log.warn(dataSources.toString());
+		List<DbaDataFilesDTO> results = new ArrayList<>();
+		
+		for (Iterator<DataSOurceEntity> iterator = dataSources.iterator(); iterator.hasNext();) {
+			DataSOurceEntity dataSOurceEntity = (DataSOurceEntity) iterator.next();
+			
+			log.warn(dataSOurceEntity.toString());
+			
+			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSOurceEntity.getDataSource());
+			
+			List<DbaDataFilesDTO> result = jdbcTemplate.query(query, new DbaDataFilesMapper());
+			
+			for (Iterator<DbaDataFilesDTO> iterator2 = result.iterator(); iterator2.hasNext();) {
+				DbaDataFilesDTO dbaDataFilesDTO = (DbaDataFilesDTO) iterator2.next();
+				
+				dbaDataFilesDTO.setDbName(dataSOurceEntity.getId());
+				
+				results.add(dbaDataFilesDTO);
+			}
+		}
 		
 		return results;
 	}
@@ -76,7 +96,7 @@ public class TableSpaceRepository {
 				"  FROM dba_segments\n" + 
 				"  GROUP BY tablespace_name";
 		
-		List<DbaSegmentsDTO> results = jdbcTemplate.query(query, new DbaSegmentsMapper());
+		List<DbaSegmentsDTO> results = null; //jdbcTemplate.query(query, new DbaSegmentsMapper());
 		
 		return results;
 	}

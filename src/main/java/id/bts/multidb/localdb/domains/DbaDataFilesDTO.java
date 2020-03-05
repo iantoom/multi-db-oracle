@@ -1,13 +1,20 @@
 package id.bts.multidb.localdb.domains;
 
-import javax.persistence.Entity;
-
-
 public class DbaDataFilesDTO {
 
+	String dbName;
+	
 	String tablespace_name;
 	
 	int totalSpace;
+
+	public String getDbName() {
+		return dbName;
+	}
+
+	public void setDbName(String dbName) {
+		this.dbName = dbName;
+	}
 
 	public String getTablespace_name() {
 		return tablespace_name;

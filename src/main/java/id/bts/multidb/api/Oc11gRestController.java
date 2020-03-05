@@ -12,15 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 import id.bts.multidb.localdb.domains.DbaDataFilesDTO;
 import id.bts.multidb.localdb.domains.DbaSegmentsDTO;
 import id.bts.multidb.localdb.domains.TableSpaceDTO;
-import id.bts.multidb.localdb.repositories.TableSpaceRepository;
-import id.bts.multidb.oc11g.repositories.UserRepository;
+import id.bts.multidb.localdb.repositories.DynamicTabSpaceRepo;
 
 @RestController
 public class Oc11gRestController {
 	
 	@Autowired
 	@Qualifier("tableSpace_jdbcTemplate")
-	private TableSpaceRepository tableSpaceRepository;
+	private DynamicTabSpaceRepo tableSpaceRepository;
 	
 	@GetMapping("/used")
 	@ResponseStatus(code = HttpStatus.OK)
